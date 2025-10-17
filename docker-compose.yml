@@ -49,6 +49,30 @@ services:
       - '--web.console.templates=/etc/prometheus/consoles'
       - '--web.enable-lifecycle'
     restart: always
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  redis-exporter:
+    image: oliver006/redis_exporter:latest
+    container_name: redis-exporter
+    ports:
+      - "9121:9121"
+    environment:
+      - REDIS_ADDR=redis://redis:6379
+    restart: always
+    depends_on:
+      - redis
+
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:latest
+    container_name: postgres-exporter
+    ports:
+      - "9187:9187"
+    environment:
+      - DATA_SOURCE_NAME=postgresql://user:password@postgres:5432/database?sslmode=disable
+    restart: always
+    depends_on:
+      - postgres
 
   grafana:
     image: grafana/grafana:latest
@@ -57,11 +81,15 @@ services:
       - "3000:3000"
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_SECURITY_ADMIN_USER=admin
     volumes:
       - grafana_data:/var/lib/grafana
       - ./grafana/provisioning:/etc/grafana/provisioning
       - ./grafana/dashboards:/var/lib/grafana/dashboards
+      - ./grafana/grafana.ini:/etc/grafana/grafana.ini
     restart: always
+    depends_on:
+      - prometheus
 
 volumes:
   postgres_data:

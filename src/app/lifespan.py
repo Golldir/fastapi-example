@@ -5,7 +5,8 @@ from typing import TypedDict
 from fastapi import FastAPI, Request
 from src.app.core.database import DatabaseConnection
 from src.app.core.redis import RedisConnection
-from src.app.core.metrics import metrics
+import asyncio
+import contextlib
 
 
 class AppState(TypedDict):
@@ -26,10 +27,6 @@ async def lifespan(app: FastAPI) -> AsyncIterator[AppState]:
     redis_status = await redis.check_connection()
     await database.open_connection()
     db_status = await database.check_connection()
-
-    # Обновляем метрики статуса подключений
-    # metrics.set_database_status(db_status)
-    # metrics.set_redis_status(redis_status)
 
     app.state.database = database
     app.state.redis = redis

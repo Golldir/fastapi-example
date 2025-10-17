@@ -5,7 +5,7 @@ from src.app.repositories.order_repository import OrderRepository
 from src.app.models.order_model import Order
 from src.app.core.uow import UnitOfWork
 from src.app.schemas.order_schema import OrderCreateSchema
-from src.app.core.metrics import metrics
+from src.app.core.metrics import ORDERS_TOTAL
 
 
 class OrderService:
@@ -33,7 +33,7 @@ class OrderService:
             )
             
             # Увеличиваем счетчик созданных заказов
-            metrics.increment_orders()
+            ORDERS_TOTAL.inc()
             
             return created_order
             

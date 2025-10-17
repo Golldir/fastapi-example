@@ -1,17 +1,27 @@
 global:
-  scrape_interval: 15s
+  scrape_interval: 15s  # как часто опрашивать таргеты
   evaluation_interval: 15s
 
 scrape_configs:
-  # Конфигурация для сбора метрик с FastAPI приложения
-  - job_name: 'order-service'
+  # Сбор метрик самого Prometheus
+  - job_name: "prometheus"
     static_configs:
-      - targets: ['host.docker.internal:8000']
-    metrics_path: '/metrics'
-    scrape_interval: 15s
-    scrape_timeout: 10s
-    
-  # Конфигурация для сбора метрик с самого Prometheus
-  - job_name: 'prometheus'
+      - targets: ["prometheus:9090"]
+
+  # Сбор метрик вашего приложения (экспортирует /metrics через Instrumentator)
+  - job_name: "app"
+    metrics_path: /metrics
     static_configs:
-      - targets: ['localhost:9090']
+      - targets: ["host.docker.internal:8000"]  # FastAPI приложение на хосте
+
+  # Сбор метрик Redis
+  - job_name: "redis"
+    static_configs:
+      - targets: ["redis-exporter:9121"]
+
+  # Сбор метрик PostgreSQL
+  - job_name: "postgres"
+    static_configs:
+      - targets: ["postgres-exporter:9187"]
+
+
