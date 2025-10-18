@@ -1,7 +1,8 @@
 from fastapi import Request
 from src.app.core.redis import RedisConnection
-from fastapi import Depends
-
+from src.app.core.config import settings
 
 def get_redis_connection(request: Request) -> RedisConnection:
-    return request.app.state.redis
+    if request and hasattr(request.app.state, 'redis'):
+        return request.app.state.redis
+

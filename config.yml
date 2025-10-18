@@ -1,0 +1,13 @@
+app_env: dev
+postgres:
+  host: localhost
+  port: 5432
+  db: database
+  user: user
+  password: password
+
+redis:
+  url: redis://localhost:6379
+
+kafka:
+  url: kafka://localhost:9092

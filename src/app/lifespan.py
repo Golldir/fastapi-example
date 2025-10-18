@@ -1,35 +1,30 @@
 from contextlib import asynccontextmanager
 from collections.abc import AsyncIterator
 from typing import TypedDict
-
-from fastapi import FastAPI, Request
+import asyncio
+from fastapi import FastAPI, Depends
 from src.app.core.database import DatabaseConnection
 from src.app.core.redis import RedisConnection
-import asyncio
-import contextlib
-
-
+from src.app.core.config import settings
 class AppState(TypedDict):
     db: DatabaseConnection
     redis: RedisConnection
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI) -> AsyncIterator[AppState]:
-    database = DatabaseConnection(
-        db_url='postgresql+asyncpg://user:password@localhost:5432/database'
-    )
-    redis = RedisConnection(
-        redis_url='redis://localhost:6379'
-    )
-
-    await redis.open_connection()
-    redis_status = await redis.check_connection()
+async def lifespan(
+    app: FastAPI
+) -> AsyncIterator[AppState]:
+    database = DatabaseConnection(db_url=str(settings.db_dsn))
     await database.open_connection()
-    db_status = await database.check_connection()
+    await database.check_connection()
 
-    app.state.database = database
-    app.state.redis = redis
+    redis = RedisConnection(redis_url=str(settings.redis_dsn))
+    await redis.open_connection()
+    await redis.check_connection()
+
+    app.state.database: DatabaseConnection = database
+    app.state.redis: RedisConnection = redis
 
     yield 
     # Закрытие (выполняется после yield)

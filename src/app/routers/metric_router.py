@@ -16,9 +16,9 @@ async def metrics(
     redis_connection: RedisConnection = Depends(get_redis_connection),
     database_connection: DatabaseConnection = Depends(get_database_connection),
 ):
-    redis_status = await redis_connection.check_connection()   
-    database_status = await database_connection.check_connection()
-    DB_STATUS.labels(db="postgres").set(1 if database_status else 0)
-    DB_STATUS.labels(db="redis").set(1 if redis_status else 0)
+    redis = await redis_connection.check_connection()   
+    database = await database_connection.check_connection()
+    DB_STATUS.labels(db="postgres").set(1 if database else 0)
+    DB_STATUS.labels(db="redis").set(1 if redis else 0)
   
     return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
